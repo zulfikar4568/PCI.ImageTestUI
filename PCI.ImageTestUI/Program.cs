@@ -16,7 +16,7 @@ namespace PCI.ImageTestUI
         static void Main()
         {
             // Check Connection
-            /*bool status = Bootstrapper.CheckConnection();
+            bool status = Bootstrapper.CheckConnection();
             if (!status)
             {
                 MessageBox.Show("Cannot establish the connection to the server, make sure the IP Server and Port Reachable, the app will close!");
@@ -24,7 +24,7 @@ namespace PCI.ImageTestUI
             }
 
             // Connect to Network
-            Bootstrapper.ConnectDirectoryServer();*/
+            Bootstrapper.ConnectDirectoryServer();
 
             // Dependency injection
             var containerBuilder = Bootstrapper.DependencyInjectionBuilder(new ContainerBuilder());
