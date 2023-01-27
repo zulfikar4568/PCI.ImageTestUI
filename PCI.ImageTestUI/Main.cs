@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace PCI.ImageTestUI
 {
-    public partial class Main : Form
+    public partial class Main : Krypton.Toolkit.KryptonForm
     {
         public Main()
         {
