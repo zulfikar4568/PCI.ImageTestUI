@@ -23,7 +23,7 @@ namespace PCI.ImageTestUI.Util
             }
             return listImage.ToArray();
         }
-        protected void MergeImageToPdf(string sourceFile, Image[] images)
+        public void MergeImageToPdf(string sourceFile, Image[] images)
         {
             Image image = images[0];
             PdfDocument pdfDoc = new PdfDocument(new PdfWriter(sourceFile));

@@ -209,6 +209,10 @@ namespace PCI.ImageTestUI
             try
             {
                 needSnapshot = false;
+                if (Pb_Picture.Image != null)
+                {
+                    Pb_Picture.Image.Dispose();
+                }
                 Pb_Picture.Image = image;
                 Pb_Picture.Update();
 

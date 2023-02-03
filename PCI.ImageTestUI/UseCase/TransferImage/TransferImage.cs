@@ -1,4 +1,5 @@
 ﻿using Camstar.WCF.ObjectStack;
+using iText.IO.Image;
 using PCI.ImageTestUI.Config;
 using PCI.ImageTestUI.Entity;
 using System;
@@ -16,7 +17,7 @@ namespace PCI.ImageTestUI.UseCase
     {
         private readonly Repository.Opcenter.ContainerTransaction _containerTxn;
         private readonly Util.PdfUtil _pdfUtil;
-        private List<System.Drawing.Image> _images = new List<System.Drawing.Image>();
+        private List<iText.Layout.Element.Image> _images = new List<iText.Layout.Element.Image>();
         public TransferImage(Repository.Opcenter.ContainerTransaction containerTxn, Util.PdfUtil pdfUtil)
         {
             _containerTxn = containerTxn;
@@ -84,10 +85,13 @@ namespace PCI.ImageTestUI.UseCase
             CurrentTask += 1;
             if (TotalTask >= CurrentTask)
             {
-                _images.Add(image);
+                ImageData data = ImageDataFactory.Create(image, null);
+                _images.Add(new iText.Layout.Element.Image(data));
                 if (TotalTask == CurrentTask)
                 {
                     // We attach the Logic Convert and Send the file
+                    string nameCapture = DocumentName + ".pdf";
+                    _pdfUtil.MergeImageToPdf($"{AppSettings.Folder}\\{nameCapture}", _images.ToArray());
 
                     // Reset
                     ResetState();
@@ -116,25 +120,6 @@ namespace PCI.ImageTestUI.UseCase
                 SendFileStatus = false,
                 Message = $"Failed when Process the Task"
             };
-
-            /*string nameCapture = DocumentName + ".png";
-            if (Directory.Exists(AppSettings.Folder))
-            {
-                PictureBoxObj.Image.Save($"{AppSettings.Folder}\\{nameCapture}", ImageFormat.Png);
-            }
-            else
-            {
-                Directory.CreateDirectory(AppSettings.Folder);
-                PictureBoxObj.Image.Save($"{AppSettings.Folder}\\{nameCapture}", ImageFormat.Png);
-            }
-
-            string sourceFile = $"{AppSettings.Folder}\\{nameCapture}";
-            bool statusAttachment = _containerTxn.AttachDocumentInContainer(ContainerName, AppSettings.ReuseDocument ? AttachmentTypeEnum.NewDocumentReuse : AttachmentTypeEnum.NewDocumentNOReuse, DocumentName, AppSettings.ReuseDocument ? DocumentRevision : "", sourceFile, DocumentDescription);
-            if (statusAttachment && File.Exists(sourceFile))
-            {
-                File.Delete(sourceFile);
-            }
-            return statusAttachment;*/
         }
     }
 }
