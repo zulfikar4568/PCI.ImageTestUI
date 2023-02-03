@@ -13,5 +13,6 @@ namespace PCI.ImageTestUI.Entity
         public string Qty { get; set; }
         public string Unit { get; set; }
         public string Operation { get; set; }
+        public List<Task> TaskList { get; set; }
     }
 }

@@ -189,6 +189,8 @@
     <Compile Include="Driver\Opcenter\Helper.cs" />
     <Compile Include="Driver\Opcenter\MaintenanceTransaction.cs" />
     <Compile Include="Entity\ContainerModel.cs" />
+    <Compile Include="Entity\StatusMainLogic.cs" />
+    <Compile Include="Entity\Task.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>

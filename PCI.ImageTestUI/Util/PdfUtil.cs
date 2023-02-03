@@ -13,6 +13,16 @@ namespace PCI.ImageTestUI.Util
 {
     public class PdfUtil
     {
+        public Image[] ConvertImagesToPdfImage(System.Drawing.Image[] images)
+        {
+            List<Image> listImage = new List<Image>();
+            foreach (var image in images)
+            {
+                ImageData data = ImageDataFactory.Create(image, null);
+                listImage.Add(new Image(data));
+            }
+            return listImage.ToArray();
+        }
         protected void MergeImageToPdf(string sourceFile, Image[] images)
         {
             Image image = images[0];

@@ -132,33 +132,6 @@ namespace PCI.ImageTestUI
             }
         }
 
-        public void UpdateCaptureSnapshotManifast(Bitmap image)
-        {
-            try
-            {
-                needSnapshot = false;
-                Pb_Picture.Image = image;
-                Pb_Picture.Update();
-
-                bool status = _usecaseTransferImage.MainLogic(Pb_Picture, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
-                if (status)
-                {
-                    MessageBox.Show(MessageDefinition.SendImageSuccess);
-                    ResetState();
-                }
-                else
-                {
-                    MessageBox.Show(MessageDefinition.SendImageFailed);
-                    ResetState();
-                }
-            }
-            catch (Exception ex)
-            {
-                ex.Source = AppSettings.AssemblyName == ex.Source ? MethodBase.GetCurrentMethod().Name : MethodBase.GetCurrentMethod().Name + "." + ex.Source;
-                EventLogUtil.LogErrorEvent(ex.Source, ex);
-            }
-        }
-
         public void CloseCurrentVideoSource()
         {
             try
@@ -171,7 +144,7 @@ namespace PCI.ImageTestUI
                     {
                         if (!Vsc_Source.IsRunning)
                             break;
-                        System.Threading.Thread.Sleep(100);
+                        Thread.Sleep(100);
                     }
                     if (Vsc_Source.IsRunning)
                     {
@@ -197,9 +170,6 @@ namespace PCI.ImageTestUI
             }
             else
             {
-                Lb_Instruction.Text = MessageDefinition.Waiting;
-                Lb_Instruction.ForeColor = Color.White;
-                Lb_Instruction.BackColor = Color.Blue;
                 needSnapshot = true;
             }
         }
@@ -234,6 +204,45 @@ namespace PCI.ImageTestUI
             }
         }
 
+        public void UpdateCaptureSnapshotManifast(Bitmap image)
+        {
+            try
+            {
+                needSnapshot = false;
+                Pb_Picture.Image = image;
+                Pb_Picture.Update();
+
+                /*if (_usecaseTransferImage.GetTotalTask() - 1 == _usecaseTransferImage.CurrentTask)
+                {
+                    Lb_Instruction.Text = MessageDefinition.Waiting;
+                    Lb_Instruction.ForeColor = Color.White;
+                    Lb_Instruction.BackColor = Color.Blue;
+                }*/
+                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(image, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                if (statusMainLogic.Status == StatusEnum.InProgress)
+                {
+                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
+                }
+                else if (statusMainLogic.Status == StatusEnum.Done)
+                {
+                    if (statusMainLogic.SendFileStatus)
+                    {
+                        MessageBox.Show(MessageDefinition.SendImageSuccess);
+                        ResetState();
+                    } else
+                    {
+                        MessageBox.Show(MessageDefinition.SendImageFailed);
+                        ResetState();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Source = AppSettings.AssemblyName == ex.Source ? MethodBase.GetCurrentMethod().Name : MethodBase.GetCurrentMethod().Name + "." + ex.Source;
+                EventLogUtil.LogErrorEvent(ex.Source, ex);
+            }
+        }
+
         private void Bt_Reset_Click(object sender, EventArgs e)
         {
             ResetState();
@@ -265,7 +274,7 @@ namespace PCI.ImageTestUI
                     MessageBox.Show(MessageDefinition.ProductNotFound);
                 }
                 else
-                {
+                { 
                     Bt_Capture.Enabled = true;
                     Tb_Container.Enabled = false;
                     Lb_Instruction.Text = MessageDefinition.MessageAfterScan;
@@ -277,9 +286,13 @@ namespace PCI.ImageTestUI
                     Tb_Message.Text += $"Unit: {dataContainer.Unit}\r\n";
                     Tb_Message.Text += $"Qty: {dataContainer.Qty}\r\n";
                     Tb_Message.Text += $"Operation: {dataContainer.Operation}\r\n";
+                    foreach (var item in dataContainer.TaskList)
+                    {
+                        Tb_Message.Text += item.TaskName;
+                    }
+                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
                 }
             }
-
         }
 
         private void Bt_TurnOffCamera_Click(object sender, EventArgs e)
