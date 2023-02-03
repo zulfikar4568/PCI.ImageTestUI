@@ -28,7 +28,13 @@ namespace PCI.ImageTestUI
             status = Bootstrapper.ConnectDirectoryServer();
             if (!status)
             {
-                MessageBox.Show($"Cannot establish the connection to the ${AppSettings.UNCPath}, make sure the ${AppSettings.UNCPath} Reachable, the app will close!");
+                // Connect to Network
+                status = Bootstrapper.ConnectDirectoryServer();
+                if (!status)
+                {
+                    MessageBox.Show($"Cannot establish the connection to the ${AppSettings.UNCPath}, make sure the ${AppSettings.UNCPath} Reachable, the app will close!");
+                    Environment.Exit(0);
+                }
                 Environment.Exit(0);
             }
 

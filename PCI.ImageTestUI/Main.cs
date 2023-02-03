@@ -281,7 +281,6 @@ namespace PCI.ImageTestUI
                 { 
                     Bt_Capture.Enabled = true;
                     Tb_Container.Enabled = false;
-                    Lb_Instruction.Text = MessageDefinition.MessageAfterScan;
                     Lb_Instruction.ForeColor = Color.White;
                     Lb_Instruction.BackColor = Color.YellowGreen;
 

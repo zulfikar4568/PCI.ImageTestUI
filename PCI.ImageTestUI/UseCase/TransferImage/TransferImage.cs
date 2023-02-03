@@ -2,6 +2,7 @@
 using iText.IO.Image;
 using PCI.ImageTestUI.Config;
 using PCI.ImageTestUI.Entity;
+using PCI.ImageTestUI.Test;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
@@ -32,7 +33,7 @@ namespace PCI.ImageTestUI.UseCase
         }
         public ContainerModel ContainerStatusData(string Container)
         {
-            /*ViewContainerStatus containerStatus = _containerTxn.GetCurrentContainer(Container);
+            ViewContainerStatus containerStatus = _containerTxn.GetCurrentContainer(Container);
             if (containerStatus == null) return null;
             DataContainerModel = new ContainerModel
             {
@@ -41,30 +42,11 @@ namespace PCI.ImageTestUI.UseCase
                 Operation = containerStatus.Operation is null ? MessageDefinition.ObjectNotDefined : containerStatus.Operation.ToString(),
                 Qty = containerStatus.Qty is null ? MessageDefinition.ObjectNotDefined : containerStatus.Qty.ToString(),
                 Unit = containerStatus.UOM is null ? MessageDefinition.ObjectNotDefined : containerStatus.UOM.ToString(),
-                TaskList = new List<Entity.Task>
-                {
-                    new Entity.Task{ TaskName = "Scan Image Test1" },
-                    new Entity.Task{ TaskName = "Scan Image Test2" },
-                    new Entity.Task{ TaskName = "Scan Image Test3" },
-                    new Entity.Task{ TaskName = "Scan Image Test4" }
-                }
-            };*/
+                TaskList = ContainerDataMock.GetTaskList,
+            };
 
             //Mock for testing
-            DataContainerModel = new ContainerModel()
-            {
-                Product = "Versana Model Test 1",
-                Operation = "Visual Labelling",
-                ProductDescription = "Versana Model Test export to China",
-                Qty = "1",
-                TaskList = new List<Entity.Task>()
-                    {
-                        new Entity.Task() { TaskName = "4C-RS Noise and Phantom check at B/CHI mode" },
-                        new Entity.Task() { TaskName = "4C-RS Noise and Phantom check at CF/PW mode" },
-                        new Entity.Task() { TaskName = "12-RS Noise and Phantom check at CWD mode" },
-                        new Entity.Task() { TaskName = "L3-12-RS Noise Check at B/CHI mode" }
-                    }
-            };
+            //DataContainerModel = ContainerDataMock.GenerateContainerDataMock;
 
             TotalTask = DataContainerModel.TaskList.Count;
             CurrentTask = 0;
@@ -91,17 +73,32 @@ namespace PCI.ImageTestUI.UseCase
                 {
                     // We attach the Logic Convert and Send the file
                     string nameCapture = DocumentName + ".pdf";
-                    _pdfUtil.MergeImageToPdf($"{AppSettings.Folder}\\{nameCapture}", _images.ToArray());
+                    string sourceFile = $"{AppSettings.Folder}\\{nameCapture}";
+                    _pdfUtil.MergeImageToPdf(sourceFile, _images.ToArray());
 
                     // Reset
                     ResetState();
 
-                    return new StatusMainLogic()
+                    bool statusAttachment = _containerTxn.AttachDocumentInContainer(ContainerName, AppSettings.ReuseDocument ? AttachmentTypeEnum.NewDocumentReuse : AttachmentTypeEnum.NewDocumentNOReuse, DocumentName, AppSettings.ReuseDocument ? DocumentRevision : "", sourceFile, DocumentDescription);
+                    if (statusAttachment && File.Exists(sourceFile))
                     {
-                        Status = Entity.StatusEnum.Done,
-                        SendFileStatus = true,
-                        Message = "Success Process all Task"
-                    };
+                        File.Delete(sourceFile);
+                        return new StatusMainLogic()
+                        {
+                            Status = Entity.StatusEnum.Done,
+                            SendFileStatus = true,
+                            Message = "Success Process all Task"
+                        };
+                    } else if (!statusAttachment && File.Exists(sourceFile))
+                    {
+                        File.Delete(sourceFile);
+                        return new StatusMainLogic()
+                        {
+                            Status = Entity.StatusEnum.Error,
+                            SendFileStatus = false,
+                            Message = $"Failed when Process the Task"
+                        };
+                    }
 
                 } else
                 {
