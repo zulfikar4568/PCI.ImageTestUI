@@ -23,15 +23,17 @@ namespace PCI.ImageTestUI
 
             return containerBuilder;
         }
-        public static void ConnectDirectoryServer()
+        public static bool ConnectDirectoryServer()
         {
             try
             {
                 NetworkUNC.Connect();
+                return true;
             }
             catch (Exception ex)
             {
                 EventLogUtil.LogErrorEvent(AppSettings.AssemblyName == ex.Source ? MethodBase.GetCurrentMethod().Name : MethodBase.GetCurrentMethod().Name + "." + ex.Source, ex);
+                return false;
             }
         }
 

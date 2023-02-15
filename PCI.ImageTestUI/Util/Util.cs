@@ -12,6 +12,7 @@ namespace PCI.ImageTestUI.Util
         protected override void Load(ContainerBuilder moduleBuilder)
         {
             moduleBuilder.RegisterType<CameraUtil>().As<CameraUtil>();
+            moduleBuilder.RegisterType<PdfUtil>().As<PdfUtil>();
         }
     }
 }

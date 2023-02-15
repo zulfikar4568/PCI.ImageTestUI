@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using PCI.ImageTestUI.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,18 @@ namespace PCI.ImageTestUI
             }
 
             // Connect to Network
-            Bootstrapper.ConnectDirectoryServer();
+            status = Bootstrapper.ConnectDirectoryServer();
+            if (!status)
+            {
+                // Connect to Network
+                status = Bootstrapper.ConnectDirectoryServer();
+                if (!status)
+                {
+                    MessageBox.Show($"Cannot establish the connection to the ${AppSettings.UNCPath}, make sure the ${AppSettings.UNCPath} Reachable, the app will close!");
+                    Environment.Exit(0);
+                }
+                Environment.Exit(0);
+            }
 
             // Dependency injection
             var containerBuilder = Bootstrapper.DependencyInjectionBuilder(new ContainerBuilder());
