@@ -18,11 +18,13 @@ namespace PCI.ImageTestUI.UseCase
     {
         private readonly Repository.Opcenter.ContainerTransaction _containerTxn;
         private readonly Util.PdfUtil _pdfUtil;
+        private readonly Repository.Task _task;
         private List<iText.Layout.Element.Image> _images = new List<iText.Layout.Element.Image>();
-        public TransferImage(Repository.Opcenter.ContainerTransaction containerTxn, Util.PdfUtil pdfUtil)
+        public TransferImage(Repository.Opcenter.ContainerTransaction containerTxn, Util.PdfUtil pdfUtil, Repository.Task task)
         {
             _containerTxn = containerTxn;
             _pdfUtil = pdfUtil;
+            _task = task;
         }
         public ContainerModel DataContainerModel { get; set; }
         private int TotalTask { get; set; }
@@ -42,7 +44,7 @@ namespace PCI.ImageTestUI.UseCase
                 Operation = containerStatus.Operation is null ? MessageDefinition.ObjectNotDefined : containerStatus.Operation.ToString(),
                 Qty = containerStatus.Qty is null ? MessageDefinition.ObjectNotDefined : containerStatus.Qty.ToString(),
                 Unit = containerStatus.UOM is null ? MessageDefinition.ObjectNotDefined : containerStatus.UOM.ToString(),
-                TaskList = ContainerDataMock.GetTaskList,
+                TaskList = _task.GetDataCollectionList(),
             };
 
             //Mock for testing

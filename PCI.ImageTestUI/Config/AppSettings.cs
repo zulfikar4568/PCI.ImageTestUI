@@ -18,6 +18,7 @@ namespace PCI.ImageTestUI.Config
                 return System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             }
         }
+
         #region TIME
         public static TimeSpan UTCOffset
         {
@@ -124,6 +125,7 @@ namespace PCI.ImageTestUI.Config
             }
         }
         #endregion
+
         #region DOCUMENT CONFIG
         public static string DocumentRevision
         {
@@ -154,6 +156,23 @@ namespace PCI.ImageTestUI.Config
             }
         }
 
+        #endregion
+
+        #region DATA_COLLECTION
+        public static string UserDataCollectionDefName
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["UserDataCollectionDefName"];
+            }
+        }
+        public static string UserDataCollectionDefRevision
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["UserDataCollectionDefRevision"];
+            }
+        }
         #endregion
     }
 }

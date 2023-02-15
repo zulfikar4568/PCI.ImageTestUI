@@ -202,6 +202,7 @@
     <Compile Include="Repository\Opcenter\ContainerTransaction.cs" />
     <Compile Include="Repository\Opcenter\MaintenanceTransaction.cs" />
     <Compile Include="Repository\Repository.cs" />
+    <Compile Include="Repository\Task.cs" />
     <Compile Include="Test\ContainerDataMock.cs" />
     <Compile Include="UseCase\TransferImage\TransferImage.cs" />
     <Compile Include="UseCase\UseCase.cs" />
