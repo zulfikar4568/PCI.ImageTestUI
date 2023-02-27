@@ -13,6 +13,7 @@ namespace PCI.ImageTestUI.Repository
         {
             moduleBuilder.RegisterType<Opcenter.MaintenanceTransaction>().AsSelf();
             moduleBuilder.RegisterType<Opcenter.ContainerTransaction>().AsSelf();
+            moduleBuilder.RegisterType<Task>().AsSelf();
         }
     }
 }
