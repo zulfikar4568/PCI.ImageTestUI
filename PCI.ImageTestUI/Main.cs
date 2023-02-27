@@ -225,6 +225,7 @@ namespace PCI.ImageTestUI
                 StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(image, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
                 if (statusMainLogic.Status == StatusEnum.InProgress)
                 {
+                    MessageBox.Show($"Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName}. \r\n2. After that open again the MES Image Test Camera Picture Software");
                     Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
                 }
                 else if (statusMainLogic.Status == StatusEnum.Done)
@@ -288,10 +289,12 @@ namespace PCI.ImageTestUI
                     Tb_Message.Text += $"Product Description: {dataContainer.ProductDescription}\r\n";
                     Tb_Message.Text += $"Unit: {dataContainer.Unit}\r\n";
                     Tb_Message.Text += $"Qty: {dataContainer.Qty}\r\n";
-                    Tb_Message.Text += $"Operation: {dataContainer.Operation}\r\n";
+                    Tb_Message.Text += $"Operation: {dataContainer.Operation}\r\n\n";
+                    int counter = 1;
                     foreach (var item in dataContainer.TaskList)
                     {
-                        Tb_Message.Text += item.TaskName;
+                        Tb_Message.Text += $"Task {counter}: {item.TaskName}\r\n";
+                        counter++;
                     }
                     Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
                 }
