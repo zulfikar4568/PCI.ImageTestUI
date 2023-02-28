@@ -1,4 +1,9 @@
-<h1 align="center">Image Test UI</h1>
+<h1 align="center">
+  Image Test UI </br>
+  <img src="https://github.com/zulfikar4568/PCI.ImageTestUI/actions/workflows/dotnet.yml/badge.svg" />
+  <a href="https://github.com/zulfikar4568/PCI.ImageTestUI/releases/latest"><img src="https://img.shields.io/github/release/zulfikar4568/PCI.ImageTestUI.svg" /></a>
+  <a href="https://github.com/zulfikar4568/PCI.ImageTestUI/blob/master/LICENSE"><img src="https://img.shields.io/github/license/zulfikar4568/PCI.ImageTestUI.svg" /></a>
+</h1>
 
 # Change the Config of the Application
 Edit the hosts in your `Endpoints.config`
