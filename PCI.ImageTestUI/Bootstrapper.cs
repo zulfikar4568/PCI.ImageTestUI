@@ -46,8 +46,9 @@ namespace PCI.ImageTestUI
                     tcpClient.Connect(AppSettings.ExCoreHost, Convert.ToInt32(AppSettings.ExCorePort));
                     return true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    EventLogUtil.LogErrorEvent(AppSettings.AssemblyName == ex.Source ? MethodBase.GetCurrentMethod().Name : MethodBase.GetCurrentMethod().Name + "." + ex.Source, ex);
                     return false;
                 }
             }
