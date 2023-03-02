@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.0"></a>
+## [1.1.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.1.0) (2023-3-2)
+
+### Features
+
+* finished task immediately ([6659460](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/6659460d60a7668d021ce3a3a4f10a68ee00ef45))
+
+### Other
+
+* Merge branch 'master' of https://github.com/zulfikar4568/PCI.ImageTestUI ([76e83e0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/76e83e0213fa50cace42d9e1cc75a396790f02bb))
+
 <a name="1.0.0"></a>
 ## [1.0.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.0.0) (2023-2-28)
 
