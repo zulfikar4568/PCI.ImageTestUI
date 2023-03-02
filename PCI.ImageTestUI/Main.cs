@@ -4,15 +4,9 @@ using PCI.ImageTestUI.Config;
 using PCI.ImageTestUI.UseCase;
 using PCI.ImageTestUI.Util;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using static PCI.ImageTestUI.Util.CameraUtil;
 using PCI.ImageTestUI.Entity;
@@ -91,7 +85,7 @@ namespace PCI.ImageTestUI
                 }
                 else
                 {
-                    MessageBox.Show(MessageDefinition.NoDeviceFound);
+                    MessageBox.Show(MessageDefinition.NoDeviceFound, "Device Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 _camera.videoDevice = new VideoCaptureDevice(_camera.videoDevices[Convert.ToInt32(_camera.Usbcamera)].MonikerString);
@@ -166,7 +160,7 @@ namespace PCI.ImageTestUI
         {
             if (Vsc_Source.VideoSource == null)
             {
-                MessageBox.Show(MessageDefinition.CameraNotConnected);
+                MessageBox.Show(MessageDefinition.CameraNotConnected, "Device Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
@@ -209,37 +203,27 @@ namespace PCI.ImageTestUI
             try
             {
                 needSnapshot = false;
-                if (Pb_Picture.Image != null)
-                {
-                    Pb_Picture.Image.Dispose();
-                }
+                Pb_Picture.Image?.Dispose();
                 Pb_Picture.Image = image;
                 Pb_Picture.Update();
 
-                /*if (_usecaseTransferImage.GetTotalTask() - 1 == _usecaseTransferImage.CurrentTask)
-                {
-                    Lb_Instruction.Text = MessageDefinition.Waiting;
-                    Lb_Instruction.ForeColor = Color.White;
-                    Lb_Instruction.BackColor = Color.Blue;
-                }*/
                 StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(image, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
                 if (statusMainLogic.Status == StatusEnum.InProgress)
                 {
-                    MessageBox.Show($"Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName}. \r\n2. After that open again the MES Image Test Camera Picture Software");
+                    if (!Bt_Finished.Enabled) Bt_Finished.Enabled = true;
+                    MessageBox.Show($"Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName}. \r\n2. After that open again the MES Image Test Camera Picture Software", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
                 }
                 else if (statusMainLogic.Status == StatusEnum.Done)
                 {
-                    if (statusMainLogic.SendFileStatus)
-                    {
-                        MessageBox.Show(MessageDefinition.SendImageSuccess);
-                        ResetState();
-                    } else
-                    {
-                        MessageBox.Show(MessageDefinition.SendImageFailed);
-                        ResetState();
-                    }
+                    MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
+                else if (statusMainLogic.Status == StatusEnum.Error)
+                {
+                    MessageBox.Show(MessageDefinition.SendImageFailed, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                if (statusMainLogic.Status != StatusEnum.InProgress) ResetState();
             }
             catch (Exception ex)
             {
@@ -255,6 +239,7 @@ namespace PCI.ImageTestUI
 
         private void ResetState()
         {
+            Bt_Finished.Enabled = false;
             Pb_Picture.Image = null;
             Bt_Capture.Enabled = false;
             Tb_Container.Enabled = true;
@@ -276,7 +261,7 @@ namespace PCI.ImageTestUI
                 ContainerModel dataContainer = _usecaseTransferImage.ContainerStatusData(Tb_Container.Text);
                 if (dataContainer is null)
                 {
-                    MessageBox.Show(MessageDefinition.ProductNotFound);
+                    MessageBox.Show(MessageDefinition.ProductNotFound, "Opcenter Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
                 { 
@@ -305,13 +290,37 @@ namespace PCI.ImageTestUI
         {
             if (Vsc_Source.VideoSource == null)
             {
-                MessageBox.Show(MessageDefinition.CameraNotConnected);
+                MessageBox.Show(MessageDefinition.CameraNotConnected, "Device Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else
             {
                 CloseCurrentVideoSource();
                 Bt_TurnOffCamera.Enabled = false;
                 Bt_Camera.Enabled = true;
+            }
+        }
+
+        private void Bt_Finished_Click(object sender, EventArgs e)
+        {
+            if (_usecaseTransferImage.CurrentTask < _usecaseTransferImage.TotalTask)
+            {
+                DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (dialogResult == DialogResult.Yes)
+                {
+                    var statusMainLogic = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                    if (statusMainLogic.Status == StatusEnum.Done)
+                    {
+                        MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else if (statusMainLogic.Status == StatusEnum.Error)
+                    {
+                        MessageBox.Show(MessageDefinition.SendImageFailed, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    ResetState();
+                    Bt_Finished.Enabled = false;
+                }
             }
         }
     }

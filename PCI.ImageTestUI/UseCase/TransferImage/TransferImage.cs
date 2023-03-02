@@ -5,6 +5,7 @@ using PCI.ImageTestUI.Entity;
 using PCI.ImageTestUI.Test;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace PCI.ImageTestUI.UseCase
             _task = task;
         }
         public ContainerModel DataContainerModel { get; set; }
-        private int TotalTask { get; set; }
+        public int TotalTask { get; set; }
         public int CurrentTask { get; set; }
         public int GetTotalTask()
         {
@@ -63,6 +64,35 @@ namespace PCI.ImageTestUI.UseCase
             _images.Clear();
             DataContainerModel = null;
         }
+        public StatusMainLogic SendAllImageToOpcenter(string ContainerName,string DocumentName, string DocumentRevision, string DocumentDescription)
+        {
+            // We attach the Logic Convert and Send the file
+            string nameCapture = DocumentName + ".pdf";
+            string sourceFile = $"{AppSettings.Folder}\\{nameCapture}";
+            _pdfUtil.MergeImageToPdf(sourceFile, _images.ToArray());
+
+            // Reset
+            ResetState();
+
+            bool statusAttachment = _containerTxn.AttachDocumentInContainer(ContainerName, AppSettings.ReuseDocument ? AttachmentTypeEnum.NewDocumentReuse : AttachmentTypeEnum.NewDocumentNOReuse, DocumentName, AppSettings.ReuseDocument ? DocumentRevision : "", sourceFile, DocumentDescription);
+            if (File.Exists(sourceFile)) File.Delete(sourceFile);
+            if (statusAttachment)
+            {
+                return new StatusMainLogic()
+                {
+                    Status = Entity.StatusEnum.Done,
+                    Message = "Success Process all Task"
+                };
+            }
+            else
+            {
+                return new StatusMainLogic()
+                {
+                    Status = Entity.StatusEnum.Error,
+                    Message = $"Failed when Process the Task"
+                };
+            }
+        }
 
         public StatusMainLogic MainLogic(System.Drawing.Image image, string ContainerName, string DocumentName, string DocumentRevision, string DocumentDescription)
         {
@@ -73,41 +103,12 @@ namespace PCI.ImageTestUI.UseCase
                 _images.Add(new iText.Layout.Element.Image(data));
                 if (TotalTask == CurrentTask)
                 {
-                    // We attach the Logic Convert and Send the file
-                    string nameCapture = DocumentName + ".pdf";
-                    string sourceFile = $"{AppSettings.Folder}\\{nameCapture}";
-                    _pdfUtil.MergeImageToPdf(sourceFile, _images.ToArray());
-
-                    // Reset
-                    ResetState();
-
-                    bool statusAttachment = _containerTxn.AttachDocumentInContainer(ContainerName, AppSettings.ReuseDocument ? AttachmentTypeEnum.NewDocumentReuse : AttachmentTypeEnum.NewDocumentNOReuse, DocumentName, AppSettings.ReuseDocument ? DocumentRevision : "", sourceFile, DocumentDescription);
-                    if (statusAttachment && File.Exists(sourceFile))
-                    {
-                        File.Delete(sourceFile);
-                        return new StatusMainLogic()
-                        {
-                            Status = Entity.StatusEnum.Done,
-                            SendFileStatus = true,
-                            Message = "Success Process all Task"
-                        };
-                    } else if (!statusAttachment && File.Exists(sourceFile))
-                    {
-                        File.Delete(sourceFile);
-                        return new StatusMainLogic()
-                        {
-                            Status = Entity.StatusEnum.Error,
-                            SendFileStatus = false,
-                            Message = $"Failed when Process the Task"
-                        };
-                    }
-
+                    return SendAllImageToOpcenter(ContainerName, DocumentName, DocumentRevision, DocumentDescription);
                 } else
                 {
                     return new StatusMainLogic()
                     {
                         Status = Entity.StatusEnum.InProgress,
-                        SendFileStatus = false,
                         Message = $"Success Process the Task {DataContainerModel.TaskList[CurrentTask - 1]}"
                     };
                 }
@@ -116,7 +117,6 @@ namespace PCI.ImageTestUI.UseCase
             return new StatusMainLogic()
             {
                 Status = Entity.StatusEnum.Error,
-                SendFileStatus = false,
                 Message = $"Failed when Process the Task"
             };
         }

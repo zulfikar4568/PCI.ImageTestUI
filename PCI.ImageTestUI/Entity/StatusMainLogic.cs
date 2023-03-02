@@ -10,7 +10,6 @@ namespace PCI.ImageTestUI.Entity
     {
         public StatusEnum Status { get; set; }
         public string Message { get; set; }
-        public bool SendFileStatus { get; set; }
     }
     public enum StatusEnum
     {

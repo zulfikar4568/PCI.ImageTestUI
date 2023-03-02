@@ -20,7 +20,7 @@ namespace PCI.ImageTestUI
             bool status = Bootstrapper.CheckConnection();
             if (!status)
             {
-                MessageBox.Show("Cannot establish the connection to the server, make sure the IP Server and Port Reachable, the app will close!");
+                MessageBox.Show("Cannot establish the connection to the server, make sure the IP Server and Port Reachable, the app will close!", "Network Information", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Environment.Exit(0);
             }
 
@@ -32,7 +32,7 @@ namespace PCI.ImageTestUI
                 status = Bootstrapper.ConnectDirectoryServer();
                 if (!status)
                 {
-                    MessageBox.Show($"Cannot establish the connection to the ${AppSettings.UNCPath}, make sure the ${AppSettings.UNCPath} Reachable, the app will close!");
+                    MessageBox.Show($"Cannot establish the connection to the ${AppSettings.UNCPath}, make sure the ${AppSettings.UNCPath} Reachable, the app will close!", "Network Information", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Environment.Exit(0);
                 }
                 Environment.Exit(0);
