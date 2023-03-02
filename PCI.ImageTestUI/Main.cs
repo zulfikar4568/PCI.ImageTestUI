@@ -98,7 +98,7 @@ namespace PCI.ImageTestUI
             }
             catch (Exception err)
             {
-                MessageBox.Show(err.ToString());
+                MessageBox.Show(err.ToString(), "Device Information", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         public void OpenVideoSource(IVideoSource source)
