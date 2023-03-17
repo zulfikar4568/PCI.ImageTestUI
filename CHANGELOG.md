@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.1"></a>
+## [1.1.1](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.1.1) (2023-3-2)
+
+### Bug Fixes
+
+* exception icon of error ([a55d97a](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/a55d97a6bb57f25c4de932e6775bfcd40bc8aeb7))
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.1.0) (2023-3-2)
 
