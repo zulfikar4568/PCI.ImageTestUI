@@ -29,13 +29,6 @@ namespace PCI.ImageTestUI.Config
                 return new TimeSpan(Int32.Parse(aUTCOffset[0]), Int32.Parse(aUTCOffset[1]), Int32.Parse(aUTCOffset[2]));
             }
         }
-        public static ulong TimerPollingInterval
-        {
-            get
-            {
-                return Convert.ToUInt64(ConfigurationManager.AppSettings["TimerPollingInterval"]);
-            }
-        }
         #endregion
 
         #region CONFIG ACCOUNT ExCore
