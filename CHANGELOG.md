@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.0"></a>
+## [1.2.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.2.0) (2023-3-21)
+
+### Features
+
+* operation enforcement ([2af916e](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/2af916e80fdbf5e537060d913d54cda8da41c06f))
+
+### Bug Fixes
+
+* disabled message box ([e2ba5de](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/e2ba5deedb11948c90ac45266e95a4ca7d8f77c0))
+
+### Other
+
+* Merge branch 'master' of https://github.com/zulfikar4568/PCI.ImageTestUI ([08aea3e](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/08aea3eec477f8fdc4855f51afd9c3e78435b426))
+* Merge branch 'master' of https://github.com/zulfikar4568/PCI.ImageTestUI ([2166d37](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/2166d3753920aad3faf8e7be6bc94992bafb5a6e))
+* Merge branch 'master' of https://github.com/zulfikar4568/PCI.ImageTestUI ([b212f5b](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/b212f5b3d45cd63945f832bd61daf1d1f4237aa8))
+* remove timer poolling interval cfg ([def0a50](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/def0a50daf85d99815be46d5c0c866ec0c530ff5))
+
 <a name="1.1.1"></a>
 ## [1.1.1](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.1.1) (2023-3-2)
 
