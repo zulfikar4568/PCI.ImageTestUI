@@ -64,6 +64,7 @@ namespace PCI.ImageTestUI.UseCase
             _images.Clear();
             DataContainerModel = null;
         }
+
         public StatusMainLogic SendAllImageToOpcenter(string ContainerName,string DocumentName, string DocumentRevision, string DocumentDescription)
         {
             // We attach the Logic Convert and Send the file
@@ -119,6 +120,19 @@ namespace PCI.ImageTestUI.UseCase
                 Status = Entity.StatusEnum.Error,
                 Message = $"Failed when Process the Task"
             };
+        }
+    
+        public bool OperationEnforcement(ContainerModel data)
+        {
+            if (AppSettings.OperationName != null && AppSettings.OperationName != "")
+            {
+                if (data.Operation != AppSettings.OperationName)
+                {
+                    MessageBox.Show(MessageDefinition.OperationEnforcement + $"\nPosition: {data.Operation}", "Opcenter Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

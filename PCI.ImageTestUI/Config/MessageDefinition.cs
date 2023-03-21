@@ -18,5 +18,6 @@ namespace PCI.ImageTestUI.Config
         public static string ProductNotFound = ConfigurationManager.AppSettings["ProductNotFound"] is null || ConfigurationManager.AppSettings["ProductNotFound"] == "" ? "Container / Product Serial Number doesn't exists!" : ConfigurationManager.AppSettings["ProductNotFound"];
         public static string ObjectNotDefined = ConfigurationManager.AppSettings["ObjectNotDefined"] is null || ConfigurationManager.AppSettings["ObjectNotDefined"] == "" ? "Not defined" : ConfigurationManager.AppSettings["ObjectNotDefined"];
         public static string FinishedTheTask = ConfigurationManager.AppSettings["FinishedTheTask"] is null || ConfigurationManager.AppSettings["FinishedTheTask"] == "" ? "Do you want to finished the process? \nThere's Task still remaining to be executed.\nClick to finish process and send all image to opcenter without complete all task!" : ConfigurationManager.AppSettings["FinishedTheTask"];
+        public static string OperationEnforcement = ConfigurationManager.AppSettings["OperationEnforcement"] is null || ConfigurationManager.AppSettings["OperationEnforcement"] == "" ? "Identifier / Product Unit incorrect position!" : ConfigurationManager.AppSettings["OperationEnforcement"];
     }
 }
