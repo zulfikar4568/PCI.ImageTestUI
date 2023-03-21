@@ -167,5 +167,15 @@ namespace PCI.ImageTestUI.Config
             }
         }
         #endregion
+
+        #region Operation Constraint
+        public static string OperationName
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["OperationName"];
+            }
+        }
+        #endregion
     }
 }

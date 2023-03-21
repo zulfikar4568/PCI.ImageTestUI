@@ -29,7 +29,10 @@ namespace PCI.ImageTestUI
             this.StartPosition = FormStartPosition.Manual;
             this.Location = new Point(0, 0);
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Size.Width / 2, Screen.PrimaryScreen.WorkingArea.Size.Height);
+
             Tb_Message.Enabled = false;
+            Tb_Container.Focus();
+            Tb_Container.SelectionStart = Tb_Container.Text.Length;
 
             _camera = camera;
             _usecaseTransferImage = usecaseTransferImage;
@@ -271,7 +274,10 @@ namespace PCI.ImageTestUI
                     MessageBox.Show(MessageDefinition.ProductNotFound, "Opcenter Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
-                { 
+                {
+                    // Operation Enforcement
+                    if (!_usecaseTransferImage.OperationEnforcement(dataContainer)) return;
+
                     Bt_Capture.Enabled = true;
                     Tb_Container.Enabled = false;
                     Lb_Instruction.ForeColor = Color.White;
