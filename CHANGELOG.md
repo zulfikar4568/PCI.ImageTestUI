@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.0"></a>
+## [1.3.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.3.0) (2023-3-23)
+
+### Features
+
+* F1 keydown ([6a24846](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/6a24846a2cdacae90e1d0064bfd452551d39fc0a))
+
 <a name="1.2.0"></a>
 ## [1.2.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.2.0) (2023-3-21)
 
