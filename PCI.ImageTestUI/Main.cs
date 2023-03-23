@@ -24,6 +24,7 @@ namespace PCI.ImageTestUI
 
             // Component Initialization Default
             InitializeComponent();
+            KeyPreview = true;
 
             // Initialize Form Position
             this.StartPosition = FormStartPosition.Manual;
@@ -163,8 +164,7 @@ namespace PCI.ImageTestUI
             ExitCamera();
             Thread.Sleep(1000);
         }
-
-        private void Bt_Capture_Click(object sender, EventArgs e)
+        private void OnCapture()
         {
             if (Vsc_Source.VideoSource == null)
             {
@@ -174,6 +174,10 @@ namespace PCI.ImageTestUI
             {
                 needSnapshot = true;
             }
+        }
+        private void Bt_Capture_Click(object sender, EventArgs e)
+        {
+            OnCapture();
         }
 
         private void Vsc_Source_NewFrame(object sender, ref Bitmap image)
@@ -336,6 +340,14 @@ namespace PCI.ImageTestUI
                     ResetState();
                     Bt_Finished.Enabled = false;
                 }
+            }
+        }
+
+        private void Main_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F1 && Bt_Capture.Enabled)
+            {
+                OnCapture();
             }
         }
     }
