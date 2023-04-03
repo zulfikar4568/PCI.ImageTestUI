@@ -348,7 +348,7 @@ namespace PCI.ImageTestUI
                 bool needSendAllImage = CreateTaskForMainLogic(false);
                 if (needSendAllImage)
                 {
-                    var sendAllImage = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                    var sendAllImage = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}_FAIL", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
                     StatusSendingImage(sendAllImage.Status);
                 }
             }
@@ -388,13 +388,13 @@ namespace PCI.ImageTestUI
 
         private bool CreateTaskForMainLogic(bool isNormal)
         {
+            string suffix = isNormal ? "PASS" : "FAIL";
             using (var ms = new MemoryStream(_currentImage))
             {
                 Bitmap bmp = new Bitmap(ms);
                 Pb_Picture.Image = bmp;
                 Pb_Picture.Update();
-
-                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(bmp, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(bmp, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}_{suffix}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
                 if (statusMainLogic.Status == StatusEnum.InProgress)
                 {
                     MessageDefinition.GenerateMessageWhenSending(_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName, _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName, isNormal);
