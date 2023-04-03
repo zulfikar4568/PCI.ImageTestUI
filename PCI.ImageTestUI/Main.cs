@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using static PCI.ImageTestUI.Util.CameraUtil;
 using PCI.ImageTestUI.Entity;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.IO;
 
 namespace PCI.ImageTestUI
 {
@@ -19,6 +20,7 @@ namespace PCI.ImageTestUI
         private static bool needSnapshot = false;
         private readonly CameraUtil _camera;
         private readonly TransferImage _usecaseTransferImage;
+        private byte[] _currentImage = null;
         public Main(CameraUtil camera, TransferImage usecaseTransferImage)
         {
 
@@ -195,7 +197,23 @@ namespace PCI.ImageTestUI
                    FontStyle.Regular,
                    GraphicsUnit.Pixel);
 
-                g.DrawString(now.ToString(), font, brush, new PointF(5, 5));
+                var taskName = "";
+                var currentTask = 0;
+                var totalTask = 0;
+                if (_usecaseTransferImage.DataContainerModel != null)
+                {
+                    currentTask = _usecaseTransferImage.CurrentTask;
+                    totalTask = _usecaseTransferImage.TotalTask;
+                    if (currentTask >= totalTask)
+                    {
+                        _usecaseTransferImage.ResetState();
+                    } else
+                    {
+                        taskName = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName == null ? "" : _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName + $" ({currentTask + 1} of {totalTask})";
+                    }
+                }
+
+                g.DrawString($"{taskName} {now}", font, brush, new PointF(5, 5));
                 brush.Dispose();
                 if (needSnapshot)
                 {
@@ -210,6 +228,17 @@ namespace PCI.ImageTestUI
             }
         }
 
+        private void EnabledCapturing()
+        {
+            if (Pb_Picture.Image != null)
+            {
+                Bt_RetryCapture.Enabled = true;
+                Bt_PassCapture.Enabled = true;
+                Bt_Fail.Enabled = true;
+                Bt_Capture.Enabled = false;
+            }
+        }
+
         public void UpdateCaptureSnapshotManifast(Bitmap image)
         {
             try
@@ -219,23 +248,9 @@ namespace PCI.ImageTestUI
                 Pb_Picture.Image = image;
                 Pb_Picture.Update();
 
-                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(image, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
-                if (statusMainLogic.Status == StatusEnum.InProgress)
-                {
-                    if (!Bt_Finished.Enabled) Bt_Finished.Enabled = true;
-                    MessageBox.Show($"Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName}. \r\n2. After that open again the MES Image Test Camera Picture Software", "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
-                }
-                else if (statusMainLogic.Status == StatusEnum.Done)
-                {
-                    MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else if (statusMainLogic.Status == StatusEnum.Error)
-                {
-                    MessageBox.Show(MessageDefinition.SendImageFailed, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                _currentImage = _camera.ImageToByte(image);
 
-                if (statusMainLogic.Status != StatusEnum.InProgress) ResetState();
+                EnabledCapturing();
             }
             catch (Exception ex)
             {
@@ -255,13 +270,20 @@ namespace PCI.ImageTestUI
             Tb_Container.Text = "";
             Tb_Container.Focus();
             Tb_Container.SelectionStart = Tb_Container.Text.Length;
-            Bt_Finished.Enabled = false;
+            Bt_Fail.Enabled = false;
             Pb_Picture.Image = null;
             Bt_Capture.Enabled = false;
             Tb_Message.Text = "";
             Lb_Instruction.Text = MessageDefinition.MessageBeforeScan;
             Lb_Instruction.ForeColor = Color.White;
             Lb_Instruction.BackColor = Color.Green;
+
+            Bt_RetryCapture.Enabled = false;
+            Bt_PassCapture.Enabled = false;
+            Bt_Fail.Enabled = false;
+
+            _usecaseTransferImage.ResetState();
+            _usecaseTransferImage.ClearImages();
         }
 
         private void Bt_Camera_Click(object sender, EventArgs e)
@@ -319,26 +341,16 @@ namespace PCI.ImageTestUI
             }
         }
 
-        private void Bt_Finished_Click(object sender, EventArgs e)
+        private void Bt_Fail_Click(object sender, EventArgs e)
         {
-            if (_usecaseTransferImage.CurrentTask < _usecaseTransferImage.TotalTask)
+            DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dialogResult == DialogResult.Yes)
             {
-                DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                if (dialogResult == DialogResult.Yes)
+                bool needSendAllImage = CreateTaskForMainLogic(false);
+                if (needSendAllImage)
                 {
-                    var statusMainLogic = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
-                    if (statusMainLogic.Status == StatusEnum.Done)
-                    {
-                        MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else if (statusMainLogic.Status == StatusEnum.Error)
-                    {
-                        MessageBox.Show(MessageDefinition.SendImageFailed, "Sending the Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    ResetState();
-                    Bt_Finished.Enabled = false;
+                    var sendAllImage = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                    StatusSendingImage(sendAllImage.Status);
                 }
             }
         }
@@ -349,6 +361,60 @@ namespace PCI.ImageTestUI
             {
                 OnCapture();
             }
+        }
+
+        private bool CreateTaskForMainLogic(bool isNormal)
+        {
+            using (var ms = new MemoryStream(_currentImage))
+            {
+                Bitmap bmp = new Bitmap(ms);
+                Pb_Picture.Image = bmp;
+                Pb_Picture.Update();
+
+                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(bmp, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
+                if (statusMainLogic.Status == StatusEnum.InProgress)
+                {
+                    MessageDefinition.GenerateMessageWhenSending(_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName, _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName, isNormal);
+                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
+                    AppInReadytoCapture();
+                }
+                return StatusSendingImage(statusMainLogic.Status);
+            }
+        }
+        private bool StatusSendingImage(StatusEnum statusEnum)
+        {
+            if (statusEnum == StatusEnum.Done)
+            {
+                MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ResetState();
+                return false;
+            }
+            else if (statusEnum == StatusEnum.Error)
+            {
+                MessageBox.Show(MessageDefinition.SendImageFailed, "Failed sending the Image!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ResetState();
+                return false;
+            }
+            return true;
+        }
+
+        private void Bt_PassCapture_Click(object sender, EventArgs e)
+        {
+            CreateTaskForMainLogic(true);
+        }
+
+        private void AppInReadytoCapture()
+        {
+            Pb_Picture.Image = null;
+            Bt_Capture.Enabled = true;
+            Bt_RetryCapture.Enabled = false;
+            Bt_PassCapture.Enabled = false;
+            Bt_Fail.Enabled = false;
+        }
+
+        private void Bt_RetryCapture_Click(object sender, EventArgs e)
+        {
+            AppInReadytoCapture();
         }
     }
 }

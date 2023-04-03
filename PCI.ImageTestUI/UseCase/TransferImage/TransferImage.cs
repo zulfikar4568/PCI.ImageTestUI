@@ -61,8 +61,12 @@ namespace PCI.ImageTestUI.UseCase
         {
             TotalTask = 0;
             CurrentTask = 0;
-            _images.Clear();
             DataContainerModel = null;
+        }
+
+        public void ClearImages()
+        {
+            _images.Clear();
         }
 
         public StatusMainLogic SendAllImageToOpcenter(string ContainerName,string DocumentName, string DocumentRevision, string DocumentDescription)
@@ -71,6 +75,9 @@ namespace PCI.ImageTestUI.UseCase
             string nameCapture = DocumentName + ".pdf";
             string sourceFile = $"{AppSettings.Folder}\\{nameCapture}";
             _pdfUtil.MergeImageToPdf(sourceFile, _images.ToArray());
+
+            // Reset Images Data
+            ClearImages();
 
             // Reset
             ResetState();
