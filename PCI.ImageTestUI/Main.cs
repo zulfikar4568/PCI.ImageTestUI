@@ -340,8 +340,7 @@ namespace PCI.ImageTestUI
                 Bt_Camera.Enabled = true;
             }
         }
-
-        private void Bt_Fail_Click(object sender, EventArgs e)
+        private void FailCapturing()
         {
             DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (dialogResult == DialogResult.Yes)
@@ -354,12 +353,36 @@ namespace PCI.ImageTestUI
                 }
             }
         }
+        private void RetryCapturing()
+        {
+            Pb_Picture.Image = null;
+            Bt_Capture.Enabled = true;
+            Bt_RetryCapture.Enabled = false;
+            Bt_PassCapture.Enabled = false;
+            Bt_Fail.Enabled = false;
+        }
+        private void PassCapturing()
+        {
+            CreateTaskForMainLogic(true);
+        }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F1 && Bt_Capture.Enabled)
             {
                 OnCapture();
+            }
+            else if (e.KeyCode == Keys.F2 && Bt_RetryCapture.Enabled)
+            {
+                RetryCapturing();
+            }
+            else if (e.KeyCode == Keys.F3 && Bt_PassCapture.Enabled)
+            {
+                PassCapturing();
+            }
+            else if (e.KeyCode == Keys.F4 && Bt_Fail.Enabled)
+            {
+                FailCapturing();
             }
         }
 
@@ -376,7 +399,7 @@ namespace PCI.ImageTestUI
                 {
                     MessageDefinition.GenerateMessageWhenSending(_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName, _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName, isNormal);
                     Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
-                    AppInReadytoCapture();
+                    RetryCapturing();
                 }
                 return StatusSendingImage(statusMainLogic.Status);
             }
@@ -400,21 +423,17 @@ namespace PCI.ImageTestUI
 
         private void Bt_PassCapture_Click(object sender, EventArgs e)
         {
-            CreateTaskForMainLogic(true);
-        }
-
-        private void AppInReadytoCapture()
-        {
-            Pb_Picture.Image = null;
-            Bt_Capture.Enabled = true;
-            Bt_RetryCapture.Enabled = false;
-            Bt_PassCapture.Enabled = false;
-            Bt_Fail.Enabled = false;
+            PassCapturing();
         }
 
         private void Bt_RetryCapture_Click(object sender, EventArgs e)
         {
-            AppInReadytoCapture();
+            RetryCapturing();
+        }
+
+        private void Bt_Fail_Click(object sender, EventArgs e)
+        {
+            FailCapturing();
         }
     }
 }
