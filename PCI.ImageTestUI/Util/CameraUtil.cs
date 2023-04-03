@@ -27,5 +27,10 @@ namespace PCI.ImageTestUI.Util
 
         //Delegate Untuk Capture, insert database, update ke grid 
         public delegate void CaptureSnapshotManifast(Bitmap image);
+        public byte[] ImageToByte(Bitmap img)
+        {
+            ImageConverter converter = new ImageConverter();
+            return (byte[])converter.ConvertTo(img, typeof(byte[]));
+        }
     }
 }
