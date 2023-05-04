@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0"></a>
+## [1.4.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.4.0) (2023-5-4)
+
+### Features
+
+* add suffix pass or fail ([41ebb7c](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/41ebb7ce00e7bbd18854208a09265207d99c876c))
+* fail, retry, pass button logic ([2b42c6b](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/2b42c6bdc0319544a37bfedf8947e4ed3de11b4d))
+* shortcut for action ([0671c69](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/0671c690770a2404c014b21d386ffe00b4677b67))
+
+### Other
+
+* Merge branch 'master' of https://github.com/zulfikar4568/PCI.ImageTestUI ([461ecae](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/461ecaeefecaf21f7ec94c3201d784e9ca774cf0))
+* **release:** 1.3.0 ([8b1af09](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/8b1af090538021505b2dd16aad84fd8e1db7d3e8))
+
 <a name="1.3.0"></a>
 ## [1.3.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.3.0) (2023-3-23)
 
