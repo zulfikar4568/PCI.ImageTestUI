@@ -12,6 +12,7 @@ using static PCI.ImageTestUI.Util.CameraUtil;
 using PCI.ImageTestUI.Entity;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.IO;
+using System.Collections.Generic;
 
 namespace PCI.ImageTestUI
 {
@@ -21,6 +22,7 @@ namespace PCI.ImageTestUI
         private readonly CameraUtil _camera;
         private readonly TransferImage _usecaseTransferImage;
         private byte[] _currentImage = null;
+        private ContainerModel dataContainer = null;
         public Main(CameraUtil camera, TransferImage usecaseTransferImage)
         {
 
@@ -294,7 +296,7 @@ namespace PCI.ImageTestUI
         {
             if (e.KeyCode == Keys.Enter)
             {
-                ContainerModel dataContainer = _usecaseTransferImage.ContainerStatusData(Tb_Container.Text);
+                dataContainer = _usecaseTransferImage.ContainerStatusData(Tb_Container.Text);
                 if (dataContainer is null)
                 {
                     MessageBox.Show(MessageDefinition.ProductNotFound, "Opcenter Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -316,15 +318,34 @@ namespace PCI.ImageTestUI
                     Tb_Message.Text += $"Unit: {dataContainer.Unit}\r\n";
                     Tb_Message.Text += $"Qty: {dataContainer.Qty}\r\n";
                     Tb_Message.Text += $"Operation: {dataContainer.Operation}\r\n\n";
-                    int counter = 1;
-                    foreach (var item in dataContainer.TaskList)
-                    {
-                        Tb_Message.Text += $"Task {counter}: {item.TaskName}\r\n";
-                        counter++;
-                    }
+                    
+                    // Clear the Initial materials
+                    listViewTask.Items.Clear();
+
+                    GenerateListView(dataContainer.TaskList, listViewTask);
+
                     Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
                 }
             }
+        }
+
+        private System.Windows.Forms.ListView.ListViewItemCollection GenerateListView(List<Task> Tasks, System.Windows.Forms.ListView owner)
+        {
+            System.Windows.Forms.ListView.ListViewItemCollection listViewItemCollection = new System.Windows.Forms.ListView.ListViewItemCollection(owner);
+
+            foreach (var item in Tasks)
+            {
+                if (item == null) continue;
+                if (item.TaskName == "" || item.TaskName is null) continue;
+
+                string[] data = { item.TaskName };
+                var listViewItem = new ListViewItem(data)
+                {
+                    Checked = item.IsDone
+                };
+                listViewItemCollection.Add(listViewItem);
+            }
+            return listViewItemCollection;
         }
 
         private void Bt_TurnOffCamera_Click(object sender, EventArgs e)
