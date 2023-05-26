@@ -58,10 +58,12 @@
             this.Lb_Instruction = new System.Windows.Forms.Label();
             this.Gb_Information = new Krypton.Toolkit.KryptonGroupBox();
             this.kryptonTableLayoutPanel9 = new Krypton.Toolkit.KryptonTableLayoutPanel();
-            this.Tb_Message = new System.Windows.Forms.TextBox();
             this.Gb_SN = new Krypton.Toolkit.KryptonGroupBox();
             this.kryptonTableLayoutPanel8 = new Krypton.Toolkit.KryptonTableLayoutPanel();
             this.Tb_Container = new Krypton.Toolkit.KryptonTextBox();
+            this.Tb_Message = new System.Windows.Forms.TextBox();
+            this.listViewTask = new System.Windows.Forms.ListView();
+            this.Task = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.kryptonTableLayoutPanel1.SuspendLayout();
             this.kryptonTableLayoutPanel2.SuspendLayout();
             this.kryptonTableLayoutPanel3.SuspendLayout();
@@ -1133,28 +1135,17 @@
             this.kryptonTableLayoutPanel9.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.kryptonTableLayoutPanel9.ColumnCount = 1;
             this.kryptonTableLayoutPanel9.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.kryptonTableLayoutPanel9.Controls.Add(this.listViewTask, 0, 1);
             this.kryptonTableLayoutPanel9.Controls.Add(this.Tb_Message, 0, 0);
             this.kryptonTableLayoutPanel9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.kryptonTableLayoutPanel9.Location = new System.Drawing.Point(0, 0);
             this.kryptonTableLayoutPanel9.Name = "kryptonTableLayoutPanel9";
-            this.kryptonTableLayoutPanel9.RowCount = 1;
+            this.kryptonTableLayoutPanel9.RowCount = 2;
             this.kryptonTableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.kryptonTableLayoutPanel9.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 368F));
             this.kryptonTableLayoutPanel9.Size = new System.Drawing.Size(351, 581);
             this.kryptonTableLayoutPanel9.StateCommon.Color1 = System.Drawing.Color.White;
             this.kryptonTableLayoutPanel9.TabIndex = 0;
-            // 
-            // Tb_Message
-            // 
-            this.Tb_Message.Cursor = System.Windows.Forms.Cursors.Default;
-            this.Tb_Message.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Tb_Message.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Tb_Message.ForeColor = System.Drawing.Color.DimGray;
-            this.Tb_Message.Location = new System.Drawing.Point(2, 2);
-            this.Tb_Message.Margin = new System.Windows.Forms.Padding(2);
-            this.Tb_Message.Multiline = true;
-            this.Tb_Message.Name = "Tb_Message";
-            this.Tb_Message.Size = new System.Drawing.Size(347, 577);
-            this.Tb_Message.TabIndex = 5;
             // 
             // Gb_SN
             // 
@@ -1198,6 +1189,48 @@
             this.Tb_Container.StateCommon.Border.Rounding = 10F;
             this.Tb_Container.TabIndex = 8;
             this.Tb_Container.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Bt_Container_KeyDown);
+            // 
+            // Tb_Message
+            // 
+            this.Tb_Message.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.Tb_Message.Cursor = System.Windows.Forms.Cursors.Default;
+            this.Tb_Message.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Tb_Message.ForeColor = System.Drawing.Color.DimGray;
+            this.Tb_Message.Location = new System.Drawing.Point(2, 2);
+            this.Tb_Message.Margin = new System.Windows.Forms.Padding(2);
+            this.Tb_Message.Multiline = true;
+            this.Tb_Message.Name = "Tb_Message";
+            this.Tb_Message.Size = new System.Drawing.Size(347, 209);
+            this.Tb_Message.TabIndex = 6;
+            // 
+            // listViewTask
+            // 
+            this.listViewTask.Alignment = System.Windows.Forms.ListViewAlignment.Left;
+            this.listViewTask.BackColor = System.Drawing.Color.White;
+            this.listViewTask.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewTask.CheckBoxes = true;
+            this.listViewTask.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Task});
+            this.listViewTask.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewTask.Enabled = false;
+            this.listViewTask.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.listViewTask.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(34)))), ((int)(((byte)(45)))));
+            this.listViewTask.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listViewTask.HideSelection = false;
+            this.listViewTask.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.listViewTask.Location = new System.Drawing.Point(10, 223);
+            this.listViewTask.Margin = new System.Windows.Forms.Padding(10);
+            this.listViewTask.Name = "listViewTask";
+            this.listViewTask.Size = new System.Drawing.Size(331, 348);
+            this.listViewTask.TabIndex = 19;
+            this.listViewTask.TileSize = new System.Drawing.Size(228, 20);
+            this.listViewTask.UseCompatibleStateImageBehavior = false;
+            this.listViewTask.View = System.Windows.Forms.View.Details;
+            // 
+            // Task
+            // 
+            this.Task.Text = "Task";
+            this.Task.Width = 450;
             // 
             // Main
             // 
@@ -1270,7 +1303,6 @@
         private System.Windows.Forms.Label Lb_Instruction;
         private Krypton.Toolkit.KryptonGroupBox Gb_Information;
         private Krypton.Toolkit.KryptonTableLayoutPanel kryptonTableLayoutPanel9;
-        private System.Windows.Forms.TextBox Tb_Message;
         private Krypton.Toolkit.KryptonGroupBox Gb_SN;
         private Krypton.Toolkit.KryptonTableLayoutPanel kryptonTableLayoutPanel8;
         private Krypton.Toolkit.KryptonTextBox Tb_Container;
@@ -1291,6 +1323,9 @@
         private Krypton.Toolkit.KryptonButton Bt_PassCapture;
         private Krypton.Toolkit.KryptonButton Bt_Fail;
         private Krypton.Toolkit.KryptonButton Bt_RetryCapture;
+        private System.Windows.Forms.ListView listViewTask;
+        private System.Windows.Forms.ColumnHeader Task;
+        private System.Windows.Forms.TextBox Tb_Message;
     }
 }
 
