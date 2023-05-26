@@ -2,6 +2,7 @@
 using PCI.ImageTestUI.Config;
 using PCI.ImageTestUI.Repository.Opcenter;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,13 +17,14 @@ namespace PCI.ImageTestUI.Repository
         {
             _maintenanceTransaction = maintenanceTransaction;
         }
-        public List<Entity.Task> GetDataCollectionList()
+        public Dictionary<string, Entity.Task> GetDataCollectionList()
         {
-            List<Entity.Task> result = new List<Entity.Task>();
+            Dictionary<string, Entity.Task> result = new Dictionary<string, Entity.Task>();
             var data = _maintenanceTransaction.GetUserDataCollectionDef(AppSettings.UserDataCollectionDefName, AppSettings.UserDataCollectionDefRevision);
             foreach (var dataPoint in data.DataPoints)
             {
-                result.Add(new Entity.Task() { TaskName = dataPoint.Name.ToString() });
+                var Id = Guid.NewGuid().ToString();
+                result.Add(Id, new Entity.Task() { TaskName = dataPoint.Name.ToString(), IsDone = false, Id = Id });
             }
             return result;
         }
