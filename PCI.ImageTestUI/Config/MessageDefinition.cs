@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PCI.ImageTestUI.Entity;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -8,6 +9,12 @@ using System.Windows.Forms;
 
 namespace PCI.ImageTestUI.Config
 {
+    public class MessageAndStatusIcon
+    {
+        public string Caption { get; set; }
+        public string Msg { get; set; }
+        public MessageBoxIcon Icon { get; set; }
+    }
     internal static class MessageDefinition
     {
         public static string NoDeviceFound = ConfigurationManager.AppSettings["NoDeviceFound"] is null || ConfigurationManager.AppSettings["NoDeviceFound"] == "" ? "Camera devices not found!" : ConfigurationManager.AppSettings["NoDeviceFound"];
@@ -21,17 +28,31 @@ namespace PCI.ImageTestUI.Config
         public static string FinishedTheTask = ConfigurationManager.AppSettings["FinishedTheTask"] is null || ConfigurationManager.AppSettings["FinishedTheTask"] == "" ? "Do you want consider this task as failed? \nClick to OK to proceed and all image will send to Opcenter!" : ConfigurationManager.AppSettings["FinishedTheTask"];
         public static string OperationEnforcement = ConfigurationManager.AppSettings["OperationEnforcement"] is null || ConfigurationManager.AppSettings["OperationEnforcement"] == "" ? "Identifier / Product Unit incorrect position!" : ConfigurationManager.AppSettings["OperationEnforcement"];
         
-        public static void GenerateMessageWhenSending(string prevTask, string currentTask, bool isSuccess)
+        public static void GenerateMessageWhenSending(string currentTask, string nextTask, bool IsFail)
         {
-            if (isSuccess)
+            if (!IsFail)
             {
-                var msgSuccess = $"Task {prevTask} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {currentTask}. \r\n2. After that open again the MES Image Test Camera Picture Software";
+                var msgSuccess = $"Task {currentTask} captured successfully!\r\n\n*Notes: \r\n1. Please click submit in opcenter to continue to the next Task {nextTask}. \r\n2. After that open again the MES Image Test Camera Picture Software";
                 MessageBox.Show(msgSuccess, "Notification", MessageBoxButtons.OK, MessageBoxIcon.Information);
             } else
             {
-                var msgFail = $"{prevTask} image failed!\r\n\n*Notes: \r\n All previous image will send to opcenter!";
+                var msgFail = $"{currentTask} image failed!\r\n\n*Notes: \r\n All previous image will send to opcenter!";
                 MessageBox.Show(msgFail, "Image State Fail!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+
+        public static MessageAndStatusIcon GenerateStatusSendingImage(StatusEnum statusEnum)
+        {
+            if (statusEnum == StatusEnum.Done)
+            {
+                return new MessageAndStatusIcon() { Msg = SendImageSuccess, Caption = "Sending the Image!", Icon = MessageBoxIcon.Information };
+            }
+            else if (statusEnum == StatusEnum.Error)
+            {
+                return new MessageAndStatusIcon() { Msg = SendImageFailed, Caption = "Failed sending the Image!", Icon = MessageBoxIcon.Error };
+            }
+
+            return null;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,6 @@ namespace PCI.ImageTestUI.Entity
         public string Qty { get; set; }
         public string Unit { get; set; }
         public string Operation { get; set; }
-        public List<Task> TaskList { get; set; }
+        public Dictionary<string, Task> TaskList { get; set; }
     }
 }

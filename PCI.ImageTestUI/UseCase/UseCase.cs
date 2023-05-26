@@ -12,6 +12,7 @@ namespace PCI.ImageTestUI.UseCase
         protected override void Load(ContainerBuilder moduleBuilder)
         {
             moduleBuilder.RegisterType<TransferImage>().As<TransferImage>();
+            moduleBuilder.RegisterType<TaskUseCase>().As<TaskUseCase>();
         }
     }
 }

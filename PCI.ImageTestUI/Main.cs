@@ -13,6 +13,7 @@ using PCI.ImageTestUI.Entity;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PCI.ImageTestUI
 {
@@ -21,9 +22,14 @@ namespace PCI.ImageTestUI
         private static bool needSnapshot = false;
         private readonly CameraUtil _camera;
         private readonly TransferImage _usecaseTransferImage;
+        private readonly TaskUseCase _taskUsecase;
         private byte[] _currentImage = null;
-        private ContainerModel dataContainer = null;
-        public Main(CameraUtil camera, TransferImage usecaseTransferImage)
+
+        //Fields
+        private ContainerModel _dataContainer = null;
+        private Queue<Task> _queueTask = new Queue<Task>();
+        private bool EnabledWrite = false;
+        public Main(CameraUtil camera, TransferImage usecaseTransferImage, TaskUseCase taskUsecase)
         {
 
             // Component Initialization Default
@@ -41,6 +47,7 @@ namespace PCI.ImageTestUI
 
             _camera = camera;
             _usecaseTransferImage = usecaseTransferImage;
+            _taskUsecase = taskUsecase;
 
             // Initialize Camera
             GetListCameraUSB();
@@ -160,7 +167,11 @@ namespace PCI.ImageTestUI
                     Vsc_Source.VideoSource = null;
                 }
             }
-            catch { }
+            catch(Exception ex)
+            {
+                ex.Source = AppSettings.AssemblyName == ex.Source ? MethodBase.GetCurrentMethod().Name : MethodBase.GetCurrentMethod().Name + "." + ex.Source;
+                EventLogUtil.LogErrorEvent(ex.Source, ex);
+            }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -199,23 +210,13 @@ namespace PCI.ImageTestUI
                    FontStyle.Regular,
                    GraphicsUnit.Pixel);
 
-                var taskName = "";
-                var currentTask = 0;
-                var totalTask = 0;
-                if (_usecaseTransferImage.DataContainerModel != null)
+                // Generate Task Name
+                if (_dataContainer != null && _queueTask.Count> 0)
                 {
-                    currentTask = _usecaseTransferImage.CurrentTask;
-                    totalTask = _usecaseTransferImage.TotalTask;
-                    if (currentTask >= totalTask)
-                    {
-                        _usecaseTransferImage.ResetState();
-                    } else
-                    {
-                        taskName = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName == null ? "" : _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName + $" ({currentTask + 1} of {totalTask})";
-                    }
+                    var taskName = _taskUsecase.GenerateTaskMsgForImage(_dataContainer.TaskList, _queueTask);
+                    g.DrawString($"{taskName} {now}", font, brush, new PointF(5, 5));
                 }
 
-                g.DrawString($"{taskName} {now}", font, brush, new PointF(5, 5));
                 brush.Dispose();
                 if (needSnapshot)
                 {
@@ -266,28 +267,6 @@ namespace PCI.ImageTestUI
             ResetState();
         }
 
-        private void ResetState()
-        {
-            Tb_Container.Enabled = true;
-            Tb_Container.Text = "";
-            Tb_Container.Focus();
-            Tb_Container.SelectionStart = Tb_Container.Text.Length;
-            Bt_Fail.Enabled = false;
-            Pb_Picture.Image = null;
-            Bt_Capture.Enabled = false;
-            Tb_Message.Text = "";
-            Lb_Instruction.Text = MessageDefinition.MessageBeforeScan;
-            Lb_Instruction.ForeColor = Color.White;
-            Lb_Instruction.BackColor = Color.Green;
-
-            Bt_RetryCapture.Enabled = false;
-            Bt_PassCapture.Enabled = false;
-            Bt_Fail.Enabled = false;
-
-            _usecaseTransferImage.ResetState();
-            _usecaseTransferImage.ClearImages();
-        }
-
         private void Bt_Camera_Click(object sender, EventArgs e)
         {
             StartCamera();
@@ -296,15 +275,15 @@ namespace PCI.ImageTestUI
         {
             if (e.KeyCode == Keys.Enter)
             {
-                dataContainer = _usecaseTransferImage.ContainerStatusData(Tb_Container.Text);
-                if (dataContainer is null)
+                _dataContainer = _usecaseTransferImage.ContainerStatusData(Tb_Container.Text);
+                if (_dataContainer is null)
                 {
                     MessageBox.Show(MessageDefinition.ProductNotFound, "Opcenter Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 else
                 {
                     // Operation Enforcement
-                    if (!_usecaseTransferImage.OperationEnforcement(dataContainer)) return;
+                    if (!_usecaseTransferImage.OperationEnforcement(_dataContainer)) return;
 
                     Bt_Capture.Enabled = true;
                     Tb_Container.Enabled = false;
@@ -313,41 +292,35 @@ namespace PCI.ImageTestUI
                     Tb_Container.Focus();
                     Tb_Container.SelectionStart = Tb_Container.Text.Length;
 
-                    Tb_Message.Text += $"Product: {dataContainer.Product}\r\n";
-                    Tb_Message.Text += $"Product Description: {dataContainer.ProductDescription}\r\n";
-                    Tb_Message.Text += $"Unit: {dataContainer.Unit}\r\n";
-                    Tb_Message.Text += $"Qty: {dataContainer.Qty}\r\n";
-                    Tb_Message.Text += $"Operation: {dataContainer.Operation}\r\n\n";
+                    Tb_Message.Text += $"Product: {_dataContainer.Product}\r\n";
+                    Tb_Message.Text += $"Product Description: {_dataContainer.ProductDescription}\r\n";
+                    Tb_Message.Text += $"Unit: {_dataContainer.Unit}\r\n";
+                    Tb_Message.Text += $"Qty: {_dataContainer.Qty}\r\n";
+                    Tb_Message.Text += $"Operation: {_dataContainer.Operation}\r\n\n";
                     
                     // Clear the Initial materials
                     listViewTask.Items.Clear();
 
-                    GenerateListView(dataContainer.TaskList, listViewTask);
+                    // Regenerate DataGrid
+                    RegenerateListView();
 
-                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
+                    // Generate Pending Queue Task
+                    _queueTask = _taskUsecase.GeneratePendingQueueTask(_dataContainer.TaskList);
+
+                    if (_queueTask.Peek() != null) Lb_Instruction.Text = _queueTask.Peek().TaskName;
                 }
             }
         }
-
-        private System.Windows.Forms.ListView.ListViewItemCollection GenerateListView(List<Task> Tasks, System.Windows.Forms.ListView owner)
+        private void RegenerateListView()
         {
-            System.Windows.Forms.ListView.ListViewItemCollection listViewItemCollection = new System.Windows.Forms.ListView.ListViewItemCollection(owner);
-
-            foreach (var item in Tasks)
-            {
-                if (item == null) continue;
-                if (item.TaskName == "" || item.TaskName is null) continue;
-
-                string[] data = { item.TaskName };
-                var listViewItem = new ListViewItem(data)
-                {
-                    Checked = item.IsDone
-                };
-                listViewItemCollection.Add(listViewItem);
-            }
-            return listViewItemCollection;
+            // Clear the Initial materials
+            listViewTask.Items.Clear();
+            EnabledWrite = true;
+            if (_dataContainer == null) return;
+            if (_dataContainer.TaskList == null) return;
+            _taskUsecase.GenerateListView(_dataContainer.TaskList, listViewTask);
+            EnabledWrite = false;
         }
-
         private void Bt_TurnOffCamera_Click(object sender, EventArgs e)
         {
             if (Vsc_Source.VideoSource == null)
@@ -360,31 +333,6 @@ namespace PCI.ImageTestUI
                 Bt_TurnOffCamera.Enabled = false;
                 Bt_Camera.Enabled = true;
             }
-        }
-        private void FailCapturing()
-        {
-            DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (dialogResult == DialogResult.Yes)
-            {
-                bool needSendAllImage = CreateTaskForMainLogic(false);
-                if (needSendAllImage)
-                {
-                    var sendAllImage = _usecaseTransferImage.SendAllImageToOpcenter(Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}_FAIL", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
-                    StatusSendingImage(sendAllImage.Status);
-                }
-            }
-        }
-        private void RetryCapturing()
-        {
-            Pb_Picture.Image = null;
-            Bt_Capture.Enabled = true;
-            Bt_RetryCapture.Enabled = false;
-            Bt_PassCapture.Enabled = false;
-            Bt_Fail.Enabled = false;
-        }
-        private void PassCapturing()
-        {
-            CreateTaskForMainLogic(true);
         }
 
         private void Main_KeyDown(object sender, KeyEventArgs e)
@@ -407,39 +355,85 @@ namespace PCI.ImageTestUI
             }
         }
 
-        private bool CreateTaskForMainLogic(bool isNormal)
+        private void CreateTaskForMainLogic(bool IsFail)
         {
-            string suffix = isNormal ? "PASS" : "FAIL";
+            if (_queueTask.Count == 0) return;
+
+            string suffix = IsFail ? "FAIL" : "PASS";
             using (var ms = new MemoryStream(_currentImage))
             {
                 Bitmap bmp = new Bitmap(ms);
                 Pb_Picture.Image = bmp;
                 Pb_Picture.Update();
-                StatusMainLogic statusMainLogic = _usecaseTransferImage.MainLogic(bmp, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}_{suffix}", AppSettings.DocumentRevision, AppSettings.DocumentDescription);
-                if (statusMainLogic.Status == StatusEnum.InProgress)
-                {
-                    MessageDefinition.GenerateMessageWhenSending(_usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask - 1].TaskName, _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName, isNormal);
-                    Lb_Instruction.Text = _usecaseTransferImage.DataContainerModel.TaskList[_usecaseTransferImage.CurrentTask].TaskName;
-                    RetryCapturing();
-                }
-                return StatusSendingImage(statusMainLogic.Status);
+
+                // To define whether this is the las step
+                bool isLastTask = _queueTask.Count == 1;
+                
+                StatusEnum statusMainLogic = _usecaseTransferImage.MainLogic(bmp, Tb_Container.Text, $"{AppSettings.PrefixDocumentName}{Tb_Container.Text}_{DateTime.Now:yyyyMMddHHmmss}_{suffix}", AppSettings.DocumentRevision, AppSettings.DocumentDescription, isLastTask, IsFail, _queueTask.Peek().TaskName);
+                
+                // Store the current task and dequeue the task from peek
+                var currentTask = _queueTask.Dequeue();
+                var nextTask = _queueTask.Count == 0 ? null : _queueTask.Peek();
+                StatusSendingImage(statusMainLogic, currentTask, nextTask, IsFail);
+
+                // Update the task list
+                UpdateListTask(currentTask);
+
+                // Regenerate DataGrid
+                RegenerateListView();
             }
         }
-        private bool StatusSendingImage(StatusEnum statusEnum)
+
+        private void UpdateListTask(Task task)
         {
-            if (statusEnum == StatusEnum.Done)
+            if (_dataContainer == null) return;
+            if (_dataContainer.TaskList == null) return;
+
+            var newTasks = _dataContainer.TaskList;
+
+            _taskUsecase.ChangeListTask(ref newTasks, task);
+
+            _dataContainer.TaskList = newTasks;
+        }
+        private void StatusSendingImage(StatusEnum statusEnum, Task currentTask, Task nextTask, bool IsSuccess)
+        {
+            if (statusEnum == StatusEnum.InProgress && currentTask != null && nextTask != null)
             {
-                MessageBox.Show(MessageDefinition.SendImageSuccess, "Sending the Image!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                ResetState();
-                return false;
+                MessageDefinition.GenerateMessageWhenSending(currentTask.TaskName, nextTask.TaskName, IsSuccess);
+                Lb_Instruction.Text = nextTask.TaskName;
+                RetryCapturing();
             }
-            else if (statusEnum == StatusEnum.Error)
+            else if (statusEnum == StatusEnum.Done || statusEnum == StatusEnum.Error)
             {
-                MessageBox.Show(MessageDefinition.SendImageFailed, "Failed sending the Image!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var status = MessageDefinition.GenerateStatusSendingImage(statusEnum);
+
+                if (status != null) MessageBox.Show(status.Msg, status.Caption, MessageBoxButtons.OK, status.Icon);
+
                 ResetState();
-                return false;
+                return;
             }
-            return true;
+        }
+        private void PassCapturing()
+        {
+            CreateTaskForMainLogic(false);
+        }
+        private void FailCapturing()
+        {
+            // asking for confirmation
+            DialogResult dialogResult = MessageBox.Show(MessageDefinition.FinishedTheTask, "Notification", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            
+            if (dialogResult == DialogResult.Yes)
+            {
+                CreateTaskForMainLogic(true);
+            }
+        }
+        private void RetryCapturing()
+        {
+            Pb_Picture.Image = null;
+            Bt_Capture.Enabled = true;
+            Bt_RetryCapture.Enabled = false;
+            Bt_PassCapture.Enabled = false;
+            Bt_Fail.Enabled = false;
         }
 
         private void Bt_PassCapture_Click(object sender, EventArgs e)
@@ -455,6 +449,34 @@ namespace PCI.ImageTestUI
         private void Bt_Fail_Click(object sender, EventArgs e)
         {
             FailCapturing();
+        }
+        private void ResetState()
+        {
+            Tb_Container.Enabled = true;
+            Tb_Container.Text = "";
+            Tb_Container.Focus();
+            Tb_Container.SelectionStart = Tb_Container.Text.Length;
+            Bt_Fail.Enabled = false;
+            Pb_Picture.Image = null;
+            Bt_Capture.Enabled = false;
+            Tb_Message.Text = "";
+            Lb_Instruction.Text = MessageDefinition.MessageBeforeScan;
+            Lb_Instruction.ForeColor = Color.White;
+            Lb_Instruction.BackColor = Color.Green;
+
+            Bt_RetryCapture.Enabled = false;
+            Bt_PassCapture.Enabled = false;
+            Bt_Fail.Enabled = false;
+
+            _dataContainer = null;
+            _queueTask.Clear();
+            _usecaseTransferImage.ClearImages();
+            listViewTask.Items.Clear();
+        }
+
+        private void listViewTask_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (!EnabledWrite) e.NewValue = e.CurrentValue;
         }
     }
 }

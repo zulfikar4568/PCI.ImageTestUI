@@ -2,8 +2,8 @@
 using iText.IO.Image;
 using PCI.ImageTestUI.Config;
 using PCI.ImageTestUI.Entity;
-using PCI.ImageTestUI.Test;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -19,57 +19,34 @@ namespace PCI.ImageTestUI.UseCase
     {
         private readonly Repository.Opcenter.ContainerTransaction _containerTxn;
         private readonly Util.PdfUtil _pdfUtil;
-        private readonly Repository.Task _task;
+        private readonly Repository.Task _taskRepository;
         private List<iText.Layout.Element.Image> _images = new List<iText.Layout.Element.Image>();
-        public TransferImage(Repository.Opcenter.ContainerTransaction containerTxn, Util.PdfUtil pdfUtil, Repository.Task task)
+        public TransferImage(Repository.Opcenter.ContainerTransaction containerTxn, Util.PdfUtil pdfUtil, Repository.Task taskRepository)
         {
             _containerTxn = containerTxn;
             _pdfUtil = pdfUtil;
-            _task = task;
-        }
-        public ContainerModel DataContainerModel { get; set; }
-        public int TotalTask { get; set; }
-        public int CurrentTask { get; set; }
-        public int GetTotalTask()
-        {
-            return TotalTask;
+            _taskRepository = taskRepository;
         }
         public ContainerModel ContainerStatusData(string Container)
         {
             ViewContainerStatus containerStatus = _containerTxn.GetCurrentContainer(Container);
             if (containerStatus == null) return null;
-            DataContainerModel = new ContainerModel
+            return new ContainerModel
             {
                 Product = containerStatus.Product is null ? MessageDefinition.ObjectNotDefined : containerStatus.Product.ToString(),
                 ProductDescription = containerStatus.ProductDescription is null ? MessageDefinition.ObjectNotDefined : containerStatus.ProductDescription.ToString(),
                 Operation = containerStatus.Operation is null ? MessageDefinition.ObjectNotDefined : containerStatus.Operation.ToString(),
                 Qty = containerStatus.Qty is null ? MessageDefinition.ObjectNotDefined : containerStatus.Qty.ToString(),
                 Unit = containerStatus.UOM is null ? MessageDefinition.ObjectNotDefined : containerStatus.UOM.ToString(),
-                TaskList = _task.GetDataCollectionList(),
+                TaskList = _taskRepository.GetDataCollectionList(),
             };
-
-            //Mock for testing
-            //DataContainerModel = ContainerDataMock.GenerateContainerDataMock;
-
-            TotalTask = DataContainerModel.TaskList.Count;
-            CurrentTask = 0;
-
-            return DataContainerModel;
         }
-
-        public void ResetState()
-        {
-            TotalTask = 0;
-            CurrentTask = 0;
-            DataContainerModel = null;
-        }
-
         public void ClearImages()
         {
             _images.Clear();
         }
 
-        public StatusMainLogic SendAllImageToOpcenter(string ContainerName,string DocumentName, string DocumentRevision, string DocumentDescription)
+        public Entity.StatusEnum SendAllImageToOpcenter(string ContainerName,string DocumentName, string DocumentRevision, string DocumentDescription)
         {
             // We attach the Logic Convert and Send the file
             string nameCapture = DocumentName + ".pdf";
@@ -79,54 +56,20 @@ namespace PCI.ImageTestUI.UseCase
             // Reset Images Data
             ClearImages();
 
-            // Reset
-            ResetState();
-
             bool statusAttachment = _containerTxn.AttachDocumentInContainer(ContainerName, AppSettings.ReuseDocument ? AttachmentTypeEnum.NewDocumentReuse : AttachmentTypeEnum.NewDocumentNOReuse, DocumentName, AppSettings.ReuseDocument ? DocumentRevision : "", sourceFile, DocumentDescription);
             if (File.Exists(sourceFile)) File.Delete(sourceFile);
-            if (statusAttachment)
-            {
-                return new StatusMainLogic()
-                {
-                    Status = Entity.StatusEnum.Done,
-                    Message = "Success Process all Task"
-                };
-            }
-            else
-            {
-                return new StatusMainLogic()
-                {
-                    Status = Entity.StatusEnum.Error,
-                    Message = $"Failed when Process the Task"
-                };
-            }
+
+            // Return the result
+            return statusAttachment ? Entity.StatusEnum.Done : Entity.StatusEnum.Error;
         }
 
-        public StatusMainLogic MainLogic(System.Drawing.Image image, string ContainerName, string DocumentName, string DocumentRevision, string DocumentDescription)
+        public Entity.StatusEnum MainLogic(System.Drawing.Image image, string ContainerName, string DocumentName, string DocumentRevision, string DocumentDescription, bool IsLastTask, bool IsFail = false, string TaskName = "")
         {
-            CurrentTask += 1;
-            if (TotalTask >= CurrentTask)
-            {
-                ImageData data = ImageDataFactory.Create(image, null);
-                _images.Add(new iText.Layout.Element.Image(data));
-                if (TotalTask == CurrentTask)
-                {
-                    return SendAllImageToOpcenter(ContainerName, DocumentName, DocumentRevision, DocumentDescription);
-                } else
-                {
-                    return new StatusMainLogic()
-                    {
-                        Status = Entity.StatusEnum.InProgress,
-                        Message = $"Success Process the Task {DataContainerModel.TaskList[CurrentTask - 1]}"
-                    };
-                }
-            }
+            ImageData data = ImageDataFactory.Create(image, null);
+            _images.Add(new iText.Layout.Element.Image(data));
 
-            return new StatusMainLogic()
-            {
-                Status = Entity.StatusEnum.Error,
-                Message = $"Failed when Process the Task"
-            };
+            // Return the result
+            return IsLastTask || IsFail ? SendAllImageToOpcenter(ContainerName, DocumentName, DocumentRevision, DocumentDescription) : Entity.StatusEnum.InProgress;
         }
     
         public bool OperationEnforcement(ContainerModel data)
