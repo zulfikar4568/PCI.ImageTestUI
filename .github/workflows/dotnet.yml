@@ -8,7 +8,10 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-  
+
+env:
+  APPLICATION_NAME: PCI.ImageTestUI
+
 jobs:
   build:
 
@@ -23,6 +26,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
@@ -34,12 +39,15 @@ jobs:
     
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5
+
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1.2
       
     - name: Restore Nuget Packages
-      run: nuget restore PCI.ImageTestUI.sln
+      run: nuget restore ${{env.APPLICATION_NAME}}.sln
     
     - name: Build the Solution
-      run: msbuild PCI.ImageTestUI.sln /p:Configuration=Release
+      run: msbuild ${{env.APPLICATION_NAME}}.sln /p:Configuration=Release
       
     - name: Install Versionize
       run: dotnet tool install --global Versionize
@@ -49,10 +57,6 @@ jobs:
         git config --local user.email "isnaen70@gmail.com"
         git config --local user.name "zulfikar4568"
         
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        
     - name: Versionize Release
       id: versionize
       run: versionize --changelog-all --exit-insignificant-commits
@@ -61,6 +65,21 @@ jobs:
     - name: No release required
       if: steps.versionize.outcome != 'success'
       run: echo "Skipping Release. No release required."
+
+    - name: Build
+      if: steps.versionize.outcome == 'success'
+      shell: bash
+      run: |
+        tag=$(git describe --tags --abbrev=0)
+        prefix="v"
+        tag_no_v=${tag#"$prefix"}
+
+        echo "TAG=$tag" >> $GITHUB_ENV
+        echo "TAG_NO_V=$tag_no_v" >> $GITHUB_ENV
+        echo "APP_NAME=${tag}.zip" >> $GITHUB_ENV
+        
+        # Pack to zip for Windows
+        7z a -tzip "${tag}.zip" "./${APPLICATION_NAME}/bin/Release/*"
       
     - name: Push changes to GitHub
       if: steps.versionize.outcome == 'success'
@@ -69,26 +88,35 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ github.ref }}
         tags: true
-        
-    - name: "Create release"
+
+    - name: Publish and Release
       if: steps.versionize.outcome == 'success'
-      uses: "actions/github-script@v5"
+      uses: softprops/action-gh-release@v1
       with:
-        github-token: "${{ secrets.GITHUB_TOKEN }}"
-        script: |
-          try {
-            const tags_url = context.payload.repository.tags_url + "?per_page=1"
-            const result = await github.request(tags_url)
-            const current_tag = result.data[0].name
-            await github.rest.repos.createRelease({
-              draft: false,
-              generate_release_notes: true,
-              name: current_tag,
-              owner: context.repo.owner,
-              prerelease: false,
-              repo: context.repo.repo,
-              tag_name: current_tag,
-            });
-          } catch (error) {
-            core.setFailed(error.message);
-          }
+        files: ${{ env.APP_NAME }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        tag_name: ${{ env.TAG }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set version in all AssemblyInfo.cs files
+      if: steps.versionize.outcome == 'success'
+      uses: secondbounce/assemblyinfo-update@v2
+      with:
+        version: ${{ env.TAG_NO_V }}
+    
+    - name: Commit the AssemblyInfo.cs"
+      if: steps.versionize.outcome == 'success'
+      run: |
+        git status
+        git commit -a -m "chore(update): ${{ env.TAG }} push to the AssemblyInfo.cs"
+
+    - name: Push changes to GitHub
+      if: steps.versionize.outcome == 'success'
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+        tags: true
