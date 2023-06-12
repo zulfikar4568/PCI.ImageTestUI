@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.1"></a>
+## [1.4.1](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.4.1) (2023-6-12)
+
+### Bug Fixes
+
+* add package releaser ci/cd ([4944585](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/4944585b4d1c50b2b2ecfc88f94f85b876cf4019))
+
+### Other
+
+* change to datagrid ([65a2979](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/65a29794a8185d050f759bc40a7a1b8578e0ddc9))
+* using queue process to simplify code ([ac562a5](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/ac562a5a1aa6a0502c00a062bdfd3cb777efc122))
+
 <a name="1.4.0"></a>
 ## [1.4.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.4.0) (2023-5-4)
 
