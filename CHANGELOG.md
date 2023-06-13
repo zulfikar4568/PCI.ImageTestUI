@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.5.0"></a>
+## [1.5.0](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.5.0) (2023-6-13)
+
+### Features
+
+* add build version ([d977691](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/d977691eb874e20b3089385351992e84957b4c32))
+
+### Other
+
+* **update:** v1.4.1 push to the AssemblyInfo.cs ([72040d9](https://www.github.com/zulfikar4568/PCI.ImageTestUI/commit/72040d927871464b138974141c59e466636d347a))
+
 <a name="1.4.1"></a>
 ## [1.4.1](https://www.github.com/zulfikar4568/PCI.ImageTestUI/releases/tag/v1.4.1) (2023-6-12)
 
