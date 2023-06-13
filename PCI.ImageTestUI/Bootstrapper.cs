@@ -43,8 +43,14 @@ namespace PCI.ImageTestUI
             {
                 try
                 {
-                    tcpClient.Connect(AppSettings.ExCoreHost, Convert.ToInt32(AppSettings.ExCorePort));
-                    return true;
+                    if (tcpClient.ConnectAsync(AppSettings.ExCoreHost, Convert.ToInt32(AppSettings.ExCorePort)).Wait(TimeSpan.FromSeconds(3)))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 catch (Exception ex)
                 {

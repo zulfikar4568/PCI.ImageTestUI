@@ -41,6 +41,8 @@ namespace PCI.ImageTestUI
             this.Location = new Point(0, 0);
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Size.Width / 2, Screen.PrimaryScreen.WorkingArea.Size.Height);
 
+            this.Text += $" | Build Version {Assembly.GetEntryAssembly().GetName().Version}";
+
             Tb_Message.Enabled = false;
             Tb_Container.Focus();
             Tb_Container.SelectionStart = Tb_Container.Text.Length;
